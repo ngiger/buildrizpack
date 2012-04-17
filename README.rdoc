@@ -4,9 +4,25 @@ A buildr plugin contributing a new packaging method to package your project as a
 
 This is for Buildr, the build system that lets you build like you code. see http://buildr.apache.org/
 
-== Get Started
+Some ideas/naming conventions were picked up from https://github.com/bmuschko/gradle-izpack-plugin.
 
-TODO: Check the spec directory for more examples
+== Getting Started
+
+This plugin provides a one-stop solution for packaging, distributing and deploying applications for the Java platform using IzPack (http://izpack.org/). Before using it, install it via
+
+  gem install BuildrIzPack
+
+To use the IzPack plugin, include in your build script:
+
+  require 'buildrizpack'
+  define 'myProject' do
+    Buildr::write File.join(_,"src","main","java", "Hello.java"), "public class Hello {}"
+    package(:izpack).enhance do |installer|
+      installer.addPack('myApp', :files => package(:jar))
+    end
+  end
+
+TODO: A full, working example
 
 === BuildrIzPack Buildr
 

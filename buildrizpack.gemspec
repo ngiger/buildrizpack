@@ -36,4 +36,38 @@ TEXT
   spec.rdoc_options     = '--title', 'BuildrIzPack', '--main', 'README.rdoc',
                           '--webcvs', 'http://github.com/ngiger/buildrizpack'
   spec.post_install_message = "To get started run buildr --help"
-end
+  spec.add_dependency 'rake',                 '0.8.7'
+  spec.add_dependency 'builder',              '2.1.2'
+  spec.add_dependency 'net-ssh',              '2.0.23'
+  spec.add_dependency 'net-sftp',             '2.0.4'
+  spec.add_dependency 'rubyzip',              '0.9.4'
+  spec.add_dependency 'highline',             '1.6.2'
+  spec.add_dependency 'json_pure',            '1.4.3'
+  spec.add_dependency 'rubyforge',            '2.0.3'
+  spec.add_dependency 'hoe',                  '2.3.3'
+  spec.add_dependency 'rjb',                  '1.3.7' if spec.platform.to_s == 'x86-mswin32' || spec.platform.to_s == 'ruby'
+  spec.add_dependency 'atoulme-Antwrap',      '~> 0.7.2'
+  spec.add_dependency 'diff-lcs',             '1.1.2'
+  spec.add_dependency 'rspec-expectations',   '2.1.0'
+  spec.add_dependency 'rspec-mocks',          '2.1.0'
+  spec.add_dependency 'rspec-core',           '2.1.0'
+  spec.add_dependency 'rspec',                '2.1.0'
+  spec.add_dependency 'xml-simple',           '1.0.12'
+  spec.add_dependency 'minitar',              '0.5.3'
+  spec.add_dependency 'jruby-openssl',        '>= 0.7' if spec.platform.to_s == 'java'
+
+  # The documentation is currently not generated whe building via jruby
+  unless spec.platform.to_s == 'java'
+    spec.add_development_dependency 'jekyll', '0.11.0'
+    spec.add_development_dependency 'RedCloth', '4.2.9'
+    spec.add_development_dependency 'jekylltask', '1.1.0'
+    spec.add_development_dependency 'rdoc', '3.8'
+    spec.add_development_dependency 'rcov', '0.9.9'
+  end
+
+  spec.add_development_dependency 'ci_reporter', '1.6.3'
+
+  spec.add_development_dependency 'bundler'
+  spec.add_development_dependency 'win32console' if spec.platform.to_s == 'x86-mswin32'
+  spec.add_development_dependency 'rubyforge'
+ end

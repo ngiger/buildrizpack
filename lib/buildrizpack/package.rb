@@ -17,7 +17,7 @@ module BuildrIzPack
 
   class IzPackTask < Buildr::ArchiveTask
 
-    attr_accessor :control, :prerm, :postinst, :postrm, :preinst, :triggers, :version
+    attr_accessor :izpackVersion, :appName, :version
 
     # The ArchiveTask class delegates this method
     # so we can create the archive.
