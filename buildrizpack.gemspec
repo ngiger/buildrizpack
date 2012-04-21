@@ -66,6 +66,8 @@ TEXT
   end
 
   spec.add_development_dependency 'ci_reporter', '1.6.3'
+  spec.add_development_dependency 'debugger'
+  spec.add_development_dependency 'readline-ffi'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'win32console' if spec.platform.to_s == 'x86-mswin32'

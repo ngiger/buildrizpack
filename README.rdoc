@@ -15,11 +15,10 @@ This plugin provides a one-stop solution for packaging, distributing and deployi
 To use the IzPack plugin, include in your build script:
 
   require 'buildrizpack'
+  Buildr::write "myProject/src/main/java/Hello.java", "public class Hello {}"
   define 'myProject' do
-    Buildr::write File.join(_,"src","main","java", "Hello.java"), "public class Hello {}"
-    package(:izpack).enhance do |installer|
-      installer.addPack('myApp', :files => package(:jar))
-    end
+    package(:jar)
+    package(:izpack).include(package(:jar))
   end
 
 TODO: A full, working example

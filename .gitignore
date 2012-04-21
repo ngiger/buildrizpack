@@ -4,3 +4,5 @@ buildr
 pkg
 rdoc
 Gemfile.lock
+rake
+*.log
