@@ -39,6 +39,7 @@ describe BuildrIzPack::IzPackTask do
 		<appname>demo app</appname>
 		<appversion>7.6.5</appversion>
 	</info>
+	<guiprefs width="700" height="520" resizable="yes" />
 	<locale>
 		<langpack iso3="eng" />
 	</locale>
@@ -62,13 +63,13 @@ describe BuildrIzPack::IzPackTask do
     @path = @project.package(:jar).to_s
     File.exists?(@path).should be_true
     @path.to_s.should include(".jar")
-    FileUtils.cp(@path, "/home/niklaus/tmp.jar", :verbose => true)
     Zip::ZipFile.open(@path) do |zip|
       zip.find_entry("Main.class").should_not be_nil
       zip.find_entry("META-INF/MANIFEST.MF").should_not be_nil
     end
     File.exists?(@path).should be_true
-    @instPath = File.join(@project.path_to(:target, :main), "#{@project.id}-#{@project.id}.installer.jar")
+    @instPath = File.join(@project.path_to(:target, :main), "#{@project.name}-#{@project.version}.izpack.jar")
+    File.exists?(@instPath).should be_true
   end
   
   it "should use the provided install.xml" do
@@ -79,6 +80,10 @@ describe BuildrIzPack::IzPackTask do
     @project.package(:jar).invoke
     @project.package(:izpack).invoke
     @instPath = File.join(@project.path_to(:target, :main), "#{@project.name}-#{@project.version}.izpack.jar")
+    p Dir.glob(@project.path_to(:target,'**/*.jar'))
+    p @project.path_to(:target)
+    p @instPath
+    FileUtils.cp(@instPath, "/home/niklaus/tmp.jar", :verbose => true)
     File.exists?(@instPath).should be_true
   end
  

@@ -47,8 +47,6 @@ module BuildrIzPack
     attr_accessor :compression
     # defaults to 9. The compression level of the installation (defaults to -1 for no compression). Valid values are -1 to 9.
     attr_accessor :compressionLevel
-    # defaults to package(:jar). The jars for the main pack
-    attr_accessor :jars
 
     # The ArchiveTask class delegates this method
     # so we can create the archive.
@@ -62,33 +60,8 @@ module BuildrIzPack
       @inheritAll ||= 'true'
       @compression ||= 'deflate'
       @compressionLevel ||= '9'
-      p 5 
       raise "You must include at least one file to create an izPack installer" if file_map.size == 0
-      p @jars
-      p file_map
-      @jars ||= [ package(:jar).to_s ]
       izPackArtifact = Buildr.artifact( "org.codehaus.izpack:izpack-standalone-compiler:jar:#{@izpackVersion}")
-      p "create from #{file_map.inspect} using #{izPackArtifact.to_s}"
-      p "create with jars  #{@jars.inspect}"
-      file_map.each do |path, content|
-	p 4
-	p path
-	p content
-	p root
-        _path = File.join(root, path)
-        if content.respond_to?(:call)
-          raise "Not implemented"
-          #content.call path
-        elsif content.nil?
-          mkdir_p _path
-        elsif File.directory?(content.to_s)
-          p 8888
-        else
-          mkdir_p File.dirname(_path) if !File.exists?(File.dirname(_path))
-          cp content.to_s, _path
-        end
-      end
-      p "68: #{@input} #{File.exists?(@input)}"
       doc = nil
       if !File.exists?(@input)
 	# Then we generate a default, very basic installer
@@ -102,42 +75,23 @@ module BuildrIzPack
 	doc.elements['installation'].add_element('packs').add_element('pack').attributes['name'] = 'main'
 	doc.elements['installation/packs/pack'].add_element('description').text = "A dummy description for #{@appName}"
 	doc.elements['installation/packs/pack'].attributes['required'] = 'yes'
-	@jars.each{ 
-	  |aJar|
+	doc.elements['installation'].add_element('guiprefs').attributes['width'] = '700'
+	doc.elements['installation/guiprefs'].attributes['height'] = '520'
+	doc.elements['installation/guiprefs'].attributes['resizable'] = 'yes'
+	file_map.each{ 
+	  |src, aJar|
 	  doc.elements['installation/packs/pack'].add_element('file').attributes['targetdir']="$SYSTEM_user_home/#{@appName}"
 	  doc.elements['installation/packs/pack/file'].attributes['src']=aJar
 	}
 	doc.write(File.open(@input, 'w+'), 2)
-	# doc.write($stdout, 2)
+#	doc.write($stdout, 2)
       else
-	p 71
 	doc = Document.new File.new(@input)
       end
-      shouldBe = %(
-      <installation version="1.0">
-	<info>
-		<appname>demo app</appname>
-		<appversion>7.6.5</appversion>
-	</info>
-	<locale>
-		<langpack iso3="eng" />
-	</locale>
-	<panels>
-		<panel classname="InstallPanel" />
-	</panels>
-	<packs>
-		<pack name="Demo-App" required="yes">
-			<description>Our demo app.</description>
-			<file src="withXml-1.0.0.001.jar" targetdir="$SYSTEM_user_home/demo" />
-		</pack>
-	</packs>
-</installation>)    
-      p @izpackBaseDir
-      p @output
       Buildr.ant('izpack-ant') do |x|
 	izPackArtifact.invoke
 	msg = "Generating izpack aus #{File.expand_path(@input)} #{File.exists?(File.expand_path(@input))}"
-	p msg
+	trace msg
 	if properties
 	  properties.each{ |name, value|
 			    puts "Need added property #{name} with value #{value}"
@@ -160,29 +114,13 @@ module BuildrIzPack
     end
 
   end
-was= %(
-    module ActAsDebPackager
-    include Extension
 
-    def package_as_deb(file_name)
-      deb = DebTask.define_task(file_name)
-      deb.enhance do |task|
-        task.enhance do
-          package ||= project.id
-          version ||= project.version
-        end
-      end
-      return deb
-    end
-  end
-)
   module ActAsIzPackPackager
     include Extension
 
     def package_as_izpack(file_name)
       izpack = IzPackTask.define_task(file_name)
       izpack.enhance do |task|
-	task.jars ||= [ package(:jar).to_s ]
         task.enhance do
           package ||= project.id
           version ||= project.version
