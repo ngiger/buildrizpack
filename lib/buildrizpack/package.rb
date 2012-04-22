@@ -60,17 +60,7 @@ module BuildrIzPack
     
     attr_accessor :packaging, :properties, :variables, :dynamicvariables, :conditions, :installerrequirements,:resources,
                         :listeners, :jar, :native
-    # Adds the filePaths to a given pack. 
-    #
-    # * May be called several times for the same package 
-    #
-    # * +packName+ - the name of the destination pack, if it is a Hash, then it must point to a hash of attributes for the pack
-    # * +filePaths+ -  May be a single filename or an array of filenames
-    # * +description+ - Description of the pack
-    # * +destination+ - IzPack will copy the files at installation time to this directory/file. 
-    # 
-    def addToPack(packName, filePaths, description=packName, destination='')
-    end
+
     # The ArchiveTask class delegates this method
     # so we can create the archive.
     # the file_map is the result of the computations of the include and exclude filters.

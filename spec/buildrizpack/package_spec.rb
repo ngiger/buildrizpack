@@ -80,7 +80,7 @@ describe BuildrIzPack::IzPackTask do
     @project.package(:izpack).invoke
     @instPath = File.join(@project.path_to(:target, :main), "#{@project.name}-#{@project.version}.izpack.jar")
     File.exists?(@instPath).should be_true
-    FileUtils.cp(@instPath, "/home/niklaus/tmp.jar", :verbose => true) if File.directory?('/home/niklaus')
+    FileUtils.cp(@instPath, "/home/niklaus/tmp.jar", :verbose => true) if File.directory?('/home/niklaus')  &&  File.writable?('/home/niklaus')
   end 
  
   it "must include at least one file" do
