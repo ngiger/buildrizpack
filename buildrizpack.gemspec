@@ -70,6 +70,7 @@ TEXT
   spec.add_development_dependency 'psych',        	      '>=1.3.0' if spec.platform.to_s != 'java' and !/1.8.\d/.match(RUBY_VERSION)
 #  spec.add_development_dependency 'debugger'
   spec.add_development_dependency 'readline-ffi'
+  spec.add_development_dependency 'pygmentize'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'win32console' if spec.platform.to_s == 'x86-mswin32'
