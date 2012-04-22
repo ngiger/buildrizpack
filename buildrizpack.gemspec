@@ -67,6 +67,7 @@ TEXT
   end
 
   spec.add_development_dependency 'ci_reporter', '1.6.3'
+  spec.add_development_dependency 'psych',        	      '>=1.3.0' if spec.platform.to_s != 'java'
 #  spec.add_development_dependency 'debugger'
   spec.add_development_dependency 'readline-ffi'
 
