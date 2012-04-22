@@ -31,7 +31,7 @@ if !RUBY_PLATFORM[/java/]
     rdoc.rdoc_files.include('lib/**/*.rb')
     rdoc.rdoc_files.include spec.extra_rdoc_files
 
-      # include rake source for better inheritance rdoc
+    # include rake source for better inheritance rdoc
     rdoc.rdoc_files.include('rake/lib/**.rb')
   end
   task :rdoc => ["rake/lib"]

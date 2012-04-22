@@ -12,20 +12,50 @@ This plugin provides a one-stop solution for packaging, distributing and deployi
 
   gem install BuildrIzPack
 
-To use the IzPack plugin, include in your build script:
+== Useages
+
+There are the following different useages.
+
+1. Include one or more files and let the BuildrIzPack build a simple installer, where you may choose the installation path. Default langues is 'eng'. The locales accepts an array of locale-identifiers (3-letters ISO code) 
+
+2. Specifiy a IzPack installer-XML via the the input methods
+3. Specify the XML-content of the various elements of the IzPack installation
+
+===  Example 1
+
+include one or more files and let the BuildrIzPack build a simple installer
 
   require 'buildrizpack'
   Buildr::write "myProject/src/main/java/Hello.java", "public class Hello {}"
   define 'myProject' do
     package(:jar)
+    package(:izpack).locales = ['eng', 'fra', 'deu']
     package(:izpack).include(package(:jar))
   end
 
-TODO: A full, working example
+=== Example 2
 
-=== BuildrIzPack Buildr
+Specifiy a IzPack installer-XML via the the input methods
 
-  gem install BuildrIzPack
+  require 'buildrizpack'
+  define 'myProject' do
+    package(:jar)
+    # It is you responsability to specify correctly all dependencies!!
+    package(:izpack).input = path_to(:sources, :main, :ressources, 'myInstaller.xml')
+    package(:izpack)
+  end
+
+=== Example 3
+
+Specify the XML-content
+
+  require 'buildrizpack'
+  Buildr::write "myProject/src/main/java/Hello.java", "public class Hello {}"
+  define 'myProject' do
+    package(:jar)
+    package(:izpack).locales = ['eng', 'fra', 'deu']
+    package(:izpack).include(package(:jar))
+  end
 
 == Living On the Edge
 
@@ -42,6 +72,8 @@ If the cutting edge doesn't work, make sure to check the CHANGELOG, to see
 which changes might have broken your build.  To run all the test cases:
 
   rake spec
+
+If you have any questions or suggestions for improvements you may reach me via E-Mail to mail:niklaus.giger@member.fsf.org
 
 
 == License

@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with this
 # work for additional information regarding copyright ownership.  The ASF
@@ -19,8 +21,6 @@ include REXML
 module BuildrIzPack
 
   class IzPackTask < Buildr::ArchiveTask
-    # The version of IzPack to use. Defaults to 4.3.5
-    IZPACK_VERSION = '4.3.5'
     
     # a hash of name => value to be passed when calling the izpack installer
     # See also IzPackTask.html[http://www.jarvana.com/jarvana/view/org/codehaus/izpack/izpack-standalone-compiler/4.0.1/izpack-standalone-compiler-4.0.1-javadoc.jar!/com/izforge/izpack/ant/IzPackTask.html]
@@ -30,7 +30,7 @@ module BuildrIzPack
     # if you want to specify one or mor pack bundles with a file list maintained by buildr.
     # If not specified BuildrIzPack will create one at File.join(project.path_to(:target, 'install.xml'))
     attr_accessor :input
-    # ther version of the izpack installer to be used. Defaults to IZPACK_VERSION
+    # ther version of the izpack installer to be used. Defaults to 4.3.5
     attr_accessor :izpackVersion
     # Application name used by the IzPack installer. Defaults to the current project
     attr_accessor :appName
@@ -47,50 +47,56 @@ module BuildrIzPack
     attr_accessor :compression
     # defaults to 9. The compression level of the installation (defaults to -1 for no compression). Valid values are -1 to 9.
     attr_accessor :compressionLevel
-
+    # the packs  (including attributes, fileset, os-dependencies etc). Must be an array of XmlMarkup object.
+    attr_accessor :packs
+    
+    # The supported locale's for the installer. Must be an array of XmlMarkup object. Defaults to ['eng']
+    # For details look at IzPacks installation.dtd (Distributed with this gem)
+    attr_accessor :locales
+    # IzPacks panels's. Must be an array of XmlMarkup object. Defaults to ['TargetPanel', 'InstallPack']
+    attr_accessor :panels
+    # the supported locale's. Must be an array of XmlMarkup object. Defaults to 680 x 520
+    attr_accessor :guiprefs
+    
+    attr_accessor :packaging, :properties, :variables, :dynamicvariables, :conditions, :installerrequirements,:resources,
+                        :listeners, :jar, :native
+    # Adds the filePaths to a given pack. 
+    #
+    # * May be called several times for the same package 
+    #
+    # * +packName+ - the name of the destination pack, if it is a Hash, then it must point to a hash of attributes for the pack
+    # * +filePaths+ -  May be a single filename or an array of filenames
+    # * +description+ - Description of the pack
+    # * +destination+ - IzPack will copy the files at installation time to this directory/file. 
+    # 
+    def addToPack(packName, filePaths, description=packName, destination='')
+    end
     # The ArchiveTask class delegates this method
     # so we can create the archive.
     # the file_map is the result of the computations of the include and exclude filters.
     # 
     def create_from(file_map)
-      @izpackVersion ||= IZPACK_VERSION 
+      @izpackVersion ||= '4.3.5' 
       @appName ||= project.id
       @izpackBaseDir = File.dirname(@output) if !@izpackBaseDir
       @installerType ||= 'standard'
       @inheritAll ||= 'true'
       @compression ||= 'deflate'
       @compressionLevel ||= '9'
-      raise "You must include at least one file to create an izPack installer" if file_map.size == 0
+      @locales ||= ['eng']
+      @panels  ||= ['TargetPanel', 'InstallPanel']
+      @packs   ||= 
+      raise "You must include at least one file to create an izPack installer" if file_map.size == 0 and !File.exists?(@input)
       izPackArtifact = Buildr.artifact( "org.codehaus.izpack:izpack-standalone-compiler:jar:#{@izpackVersion}")
       doc = nil
       if !File.exists?(@input)
-	# Then we generate a default, very basic installer
-	doc = Document.new
-	doc << XMLDecl.new
-        doc.add_element('installation').add_element('info').add_element('appname').text = @appName
-	doc.elements['installation'].attributes['version'] = '1.0'
-	doc.elements['installation/info'].add_element('appversion').text = @version
-	doc.elements['installation'].add_element('locale').add_element('langpack').attributes['iso3'] = 'eng'
-	doc.elements['installation'].add_element('panels').add_element('panel').attributes['classname'] = 'InstallPanel'
-	doc.elements['installation'].add_element('packs').add_element('pack').attributes['name'] = 'main'
-	doc.elements['installation/packs/pack'].add_element('description').text = "A dummy description for #{@appName}"
-	doc.elements['installation/packs/pack'].attributes['required'] = 'yes'
-	doc.elements['installation'].add_element('guiprefs').attributes['width'] = '700'
-	doc.elements['installation/guiprefs'].attributes['height'] = '520'
-	doc.elements['installation/guiprefs'].attributes['resizable'] = 'yes'
-	file_map.each{ 
-	  |src, aJar|
-	  doc.elements['installation/packs/pack'].add_element('file').attributes['targetdir']="$SYSTEM_user_home/#{@appName}"
-	  doc.elements['installation/packs/pack/file'].attributes['src']=aJar
-	}
-	doc.write(File.open(@input, 'w+'), 2)
-#	doc.write($stdout, 2)
-      else
-	doc = Document.new File.new(@input)
+	genInstaller(Builder::XmlMarkup.new(:target=>File.open(@input, 'w+'), :indent => 2), file_map)
+	# genInstaller(Builder::XmlMarkup.new(:target=>$stdout, :indent => 2), file_map)
+	# genInstaller(Builder::XmlMarkup.new(:target=>File.open('/home/niklaus/tmp2.xml', 'w+'), :indent => 2), file_map)
       end
       Buildr.ant('izpack-ant') do |x|
 	izPackArtifact.invoke
-	msg = "Generating izpack aus #{File.expand_path(@input)} #{File.exists?(File.expand_path(@input))}"
+	msg = "Generating izpack aus #{File.expand_path(@input)} #{File.size(@input)}"
 	trace msg
 	if properties
 	  properties.each{ |name, value|
@@ -111,6 +117,49 @@ module BuildrIzPack
 		  :compressionLevel => @compressionLevel do
 	end
       end
+    end
+    
+  private 
+    def genInstaller(xm, file_map)
+      xm.instruct!
+      xm.installation('version'=>'1.0') {
+	xm.tag!('info') { xm.appname(@appName); xm.appversion(@version)}
+	if @guiprefs then xm << @guiprefs
+	else
+	  xm.guiprefs('width' => '680', 'height' => '520', 'resizable' => 'yes')
+	end
+	if @panels.class == String then xm << @panels
+	else
+	  xm.panels { 
+	    @panels.each{ |x| xm.panel('classname' => x) }
+	  }
+	end
+	if @panels.class == String then xm << @panels
+	else
+	  xm.locale { 
+	    @locales.each{ |x| xm.langpack('iso3'=>x) }
+	  }
+	end
+	if @packs then xm << @packs
+	else
+	  #default definiton of packs
+	  xm.packs {
+	  xm.pack('name' => 'main', 'required' => 'yes') {
+							  xm.description("Main pack of #{@appName}")
+	    file_map.each{ |src,aJar|
+			xm.file('src'=> aJar, 'targetdir' =>'$INSTALL_PATH')
+	      }
+	    }
+	  }
+	end
+	[@packaging, @properties, @variables, @dynamicvariables, @conditions, @installerrequirements,@resources,@listeners, @jar, @native].each do
+	  |element|
+	    xm << element if element
+	end
+                                                                                                                                                 
+      }
+      # Don't close $stdout
+      xm.target!().close if xm.target!.class == File
     end
 
   end

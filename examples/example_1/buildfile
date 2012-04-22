@@ -1,0 +1,7 @@
+require 'buildrizpack'
+Buildr::write "example_1/src/main/java/Hello.java", "public class Hello {}"
+define 'example_1', :version => '0.9.8' do
+  package(:jar)
+  package(:izpack).locales = ['eng', 'fra', 'deu']
+  package(:izpack).include(package(:jar))
+end

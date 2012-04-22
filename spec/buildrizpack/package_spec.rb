@@ -70,28 +70,57 @@ describe BuildrIzPack::IzPackTask do
     File.exists?(@path).should be_true
     @instPath = File.join(@project.path_to(:target, :main), "#{@project.name}-#{@project.version}.izpack.jar")
     File.exists?(@instPath).should be_true
-  end
+  end 
   
   it "should use the provided install.xml" do
     define_project('withXml')
     xmlPath = File.join(@project.path_to(:target), "install.xml")
     writeSimpleInstaller(xmlPath)
     @project.package(:izpack).input = xmlPath
-    @project.package(:jar).invoke
     @project.package(:izpack).invoke
     @instPath = File.join(@project.path_to(:target, :main), "#{@project.name}-#{@project.version}.izpack.jar")
-    p Dir.glob(@project.path_to(:target,'**/*.jar'))
-    p @project.path_to(:target)
-    p @instPath
-    FileUtils.cp(@instPath, "/home/niklaus/tmp.jar", :verbose => true)
     File.exists?(@instPath).should be_true
-  end
+    FileUtils.cp(@instPath, "/home/niklaus/tmp.jar", :verbose => true) if File.directory?('/home/niklaus')
+  end 
  
   it "must include at least one file" do
     @project = define('nofile', :version => "1.0.2") do
       package(:izpack)
     end
     lambda { project("nofile").package(:izpack).invoke }.should raise_error(/You must include at least one file to create an izPack installer/)
-  end
+  end 
   
+  it "should be possible to add several files to several packs" do
+    define_project('severalPacks')
+    @project.package(:izpack).locales = ['eng', 'fra', 'deu']
+    Buildr.write(@project.path_to(:target)+"/1_5.txt", "This is file 1_5.txt")
+    Buildr.write(@project.path_to(:target)+"/3_7.txt", "This is file 3_7.txt")
+    s = ''
+    xm = Builder::XmlMarkup.new(:target=>s)
+    xm.packs {
+    xm.pack('name' => 'pack_3', 'required' => 'yes') {
+						    xm.description("Niklaus ist am Testen")
+	xm.file('src'=> @project.path_to(:target)+"/1_5.txt", 'targetdir' =>'1/5')
+	xm.file('src'=> @project.path_to(:target)+"/3_7.txt", 'targetdir' =>'3/7')
+      }
+    }
+    
+    @project.package(:izpack).packs = s
+    s = ''
+    xm = Builder::XmlMarkup.new(:target=>s)
+    xm.native('type'=>'izpack', 'name'=>'ShellLink.dll')
+    @project.package(:izpack).native = s
+    @project.package(:izpack).invoke
+    File.exists?(@project.package(:izpack).input).should be_true
+    content = IO.readlines(@project.package(:izpack).input)
+    content.join.should match('pack_3')
+    content.join.should match('1_5.txt')
+    content.join.should match('3/7')
+    content.join.should match('<native ')
+    
+    @instPath = File.join(@project.path_to(:target, :main), "#{@project.name}-#{@project.version}.izpack.jar")
+    File.exists?(@instPath).should be_true
+    FileUtils.cp(@instPath, "/home/niklaus/severalPacks.jar", :verbose => true) if File.directory?('/home/niklaus')
+  end
+
 end

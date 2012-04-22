@@ -16,7 +16,7 @@
 
 Gem::Specification.new do |spec|
   spec.name           = 'buildrizpack'
-  spec.version        = '0.0.1'
+  spec.version        = '0.1'
   spec.author         = 'Niklaus Giger'
   spec.email          = "niklaus.giger@member.fsf.org"
   spec.homepage       = "http://buildr.apache.org/"
@@ -37,6 +37,7 @@ TEXT
                           '--webcvs', 'http://github.com/ngiger/buildrizpack'
   spec.post_install_message = "To get started run buildr --help"
   spec.add_dependency 'rake',                 '0.8.7'
+#  spec.add_dependency 'buildr',               '>=1.4.6'
   spec.add_dependency 'builder',              '2.1.2'
   spec.add_dependency 'net-ssh',              '2.0.23'
   spec.add_dependency 'net-sftp',             '2.0.4'
@@ -72,4 +73,8 @@ TEXT
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'win32console' if spec.platform.to_s == 'x86-mswin32'
   spec.add_development_dependency 'rubyforge'
+
+  # signing key and certificate chain
+  spec.signing_key = '/media/Keys/gem-private_key.pem'
+  spec.cert_chain  = ['gem-public_cert.pem']
  end

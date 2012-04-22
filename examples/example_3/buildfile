@@ -1,0 +1,18 @@
+require 'buildrizpack'
+Buildr::write "example_3/src/main/java/Hello.java", "public class Hello {}"
+define 'example_3', :version => '0.9.8' do
+  package(:jar)
+  package(:izpack).locales = ['eng', 'fra', 'deu']
+  Buildr.write(path_to(:target)+"/1_5.txt", "This is file 1_5.txt")
+  Buildr.write(path_to(:target)+"/3_7.txt", "This is file 3_7.txt")
+  s = ''
+  xm = Builder::XmlMarkup.new(:target=>s)
+  xm.packs {
+  xm.pack('name' => 'pack_3', 'required' => 'yes') {
+      xm.description("Niklau is testing")
+      xm.file('src'=> path_to(:target)+"/1_5.txt", 'targetdir' =>'1.5')
+      xm.file('src'=> path_to(:target)+"/3_7.txt", 'targetdir' =>'3.7')
+    }
+  }
+  package(:izpack).packs = s
+end
