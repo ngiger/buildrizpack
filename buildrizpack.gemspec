@@ -67,7 +67,7 @@ TEXT
   end
 
   spec.add_development_dependency 'ci_reporter', '1.6.3'
-  spec.add_development_dependency 'psych',        	      '>=1.3.0' if spec.platform.to_s != 'java'
+  spec.add_development_dependency 'psych',        	      '>=1.3.0' if spec.platform.to_s != 'java' and !/1.8.\d/.match(RUBY_VERSION)
 #  spec.add_development_dependency 'debugger'
   spec.add_development_dependency 'readline-ffi'
 
@@ -76,6 +76,6 @@ TEXT
   spec.add_development_dependency 'rubyforge'
 
   # signing key and certificate chain
-  spec.signing_key = '/media/Keys/gem-private_key.pem'
+  spec.signing_key = '/media/Keys/gem-private_key.pem' if false
   spec.cert_chain  = ['gem-public_cert.pem']
  end
