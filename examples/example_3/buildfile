@@ -5,14 +5,23 @@ define 'example_3', :version => '0.9.8' do
   package(:izpack).locales = ['eng', 'fra', 'deu']
   Buildr.write(path_to(:target)+"/1_5.txt", "This is file 1_5.txt")
   Buildr.write(path_to(:target)+"/3_7.txt", "This is file 3_7.txt")
-  s = ''
-  xm = Builder::XmlMarkup.new(:target=>s)
-  xm.packs {
-  xm.pack('name' => 'pack_3', 'required' => 'yes') {
-      xm.description("Niklau is testing")
-      xm.file('src'=> path_to(:target)+"/1_5.txt", 'targetdir' =>'1.5')
-      xm.file('src'=> path_to(:target)+"/3_7.txt", 'targetdir' =>'3.7')
-    }
+  pack = BuildrIzPack::Pack.new('myPackName', 'myPack description')
+  myInstXml = path_to(:target, 'myInstaller.xml')
+  pack.addFile(myInstXml)
+  pack.addFile(path_to(:target)+"/1_5.txt")
+  pack.addFile(path_to(:target)+"/3_7.txt", "$INSTALL_PATH/another_name")
+  xm = Builder::XmlMarkup.new(:target=>File.open(myInstXml, 'w+'), :indent => 2)
+  xm.instruct!
+  xm.installation('version'=>'1.0') {
+  xm.tag!('info') { xm.appversion(project.version); xm.appname(project.name) }
+  xm.guiprefs('width' => '400', 'height' => '400', 'resizable' => 'no')
+  xm.panels { |x| xm.panel('classname' => 'InstallPanel') }
+  xm.locale { |x| xm.langpack('iso3'=>'eng') }
+    xm.packs {
+      pack.emitIzPackXML(xm)
+	}
   }
-  package(:izpack).packs = s
+  xm.target!().close
+  package(:izpack).input = myInstXml
+  package(:izpack)
 end

@@ -6,3 +6,5 @@ rdoc
 Gemfile.lock
 rake
 *.log
+target
+

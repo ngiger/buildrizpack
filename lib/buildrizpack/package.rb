@@ -1,5 +1,5 @@
 # encoding: UTF-8
-
+# :include:../../README.rdoc
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with this
 # work for additional information regarding copyright ownership.  The ASF
@@ -19,6 +19,45 @@ require "rexml/document"
 include REXML
 
 module BuildrIzPack
+  
+  # A simple helper class to create a single pack
+  #
+  class Pack
+    # The path to be used by the IzPack-installer for this pack. Defaults to 
+    attr_reader :defaultPath
+    # A hast of the files to be packed (src => installpath)
+    attr_reader :files
+    # A more elaborate description of the pack
+    attr_reader :description
+    # Attributes of the pack. a hash of name => value, eg. 'require' => 'yes'
+    attr_reader :attributes
+    # Initialize an IzPack-Pack by name, description.
+    # :attributes: Attributes of the pack, a Hash, eg. { 'required' => 'yes' }
+    def initialize(name, description, attributes = {}, defaultPath = '$INSTALL_PATH/plugins')
+      @description = description
+      @attributes = attributes
+      @attributes['name'] = name 
+      @files = Hash.new
+      @defaultPath = defaultPath
+      @attributes['required'] =  'no' if !@attributes['required'] 
+    end
+    
+    # Add a single file to the pack
+    def addFile(src, dest=nil)
+      orig = dest
+      dest = File.join(@defaultPath, File.basename(src)) if !dest
+      @files[src] = dest
+    end
+    
+    # collect the XML representation for the pack using an XMLMarkup object
+    def emitIzPackXML(xm)
+      # raise "xm must be an Builder::XmlMarkup object, but is #{xm.class}" if xm.class != Builder::XmlMarkup
+      xm.pack(@attributes) {
+        xm.description(@description)
+        @files.each{ |src, dest|  xm.singlefile('src'=> src, 'target' =>dest) }
+      }
+    end
+  end
 
   class IzPackTask < Buildr::ArchiveTask
     
@@ -76,7 +115,7 @@ module BuildrIzPack
       @locales ||= ['eng']
       @panels  ||= ['TargetPanel', 'InstallPanel']
       @packs   ||= 
-      raise "You must include at least one file to create an izPack installer" if file_map.size == 0 and !File.exists?(@input)
+      raise "You must include at least one file to create an izPack installer" if file_map.size == 0 and !File.exists?(@input) 
       izPackArtifact = Buildr.artifact( "org.codehaus.izpack:izpack-standalone-compiler:jar:#{@izpackVersion}")
       doc = nil
       if !File.exists?(@input)

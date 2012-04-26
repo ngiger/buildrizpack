@@ -57,6 +57,36 @@ describe BuildrIzPack::IzPackTask do
       Buildr::write(filename, content)
   end
   
+  it "must add correctly a single file" do
+    @project = define('nofile', :version => "1.0.2") do
+      pack = BuildrIzPack::Pack.new('myPackName', 'myPack description')
+      myInstXml = File.join(Dir.pwd, 'singleFileInstaller.xml')
+      pack.addFile(myInstXml)
+      xm = Builder::XmlMarkup.new(:target=>File.open(myInstXml, 'w+'), :indent => 2)
+      xm.instruct!
+      xm.installation('version'=>'1.0') {
+      xm.tag!('info') { xm.appversion(project.version); xm.appname(project.name) }
+      xm.guiprefs('width' => '400', 'height' => '400', 'resizable' => 'no')
+      xm.panels { |x| xm.panel('classname' => 'InstallPanel') }
+      xm.locale { |x| xm.langpack('iso3'=>'eng') }
+	xm.packs {
+	  pack.emitIzPackXML(xm)
+	    }
+      }
+      xm.target!().close
+      package(:izpack).input = myInstXml
+      package(:izpack)
+    end
+    @project.package(:izpack).invoke
+    @instPath = File.join(@project.path_to(:target, :main), "#{@project.name}-#{@project.version}.izpack.jar")
+    inhalt = IO.readlines(File.join(Dir.pwd, 'singleFileInstaller.xml')).join('')
+    File.exists?(@instPath).should be_true
+    (inhalt.index('<pack name="myPackName" required="no">') > 0).should be_true
+    (inhalt.index('<description>myPack description</description>') > 0).should be_true
+    (inhalt.index('singleFileInstaller.xml" target="$INSTALL_PATH/plugins/singleFileInstaller.xml"/>') > 0).should be_true
+  end 
+  
+  
   it "should generate an installer jar" do
     define_project
     @project.package(:izpack).invoke
