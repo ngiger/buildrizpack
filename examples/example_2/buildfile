@@ -1,6 +1,6 @@
 require 'buildrizpack'
 define 'example_2', :version => '0.9.8' do
-  myInstXml = path_to(:target, 'myInstaller.xml')
+  myInstXml = File.join(Dir.pwd, 'myInstaller.xml')
   xm = Builder::XmlMarkup.new(:target=>File.open(myInstXml, 'w+'), :indent => 2)
   xm.instruct!
   xm.installation('version'=>'1.0') {
