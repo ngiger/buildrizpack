@@ -238,7 +238,6 @@ module Buildr
         @skip_content = true
       end
 
-
       def add_gwt_facet(modules = {}, options = {})
         name = options[:name] || "GWT"
         settings =
@@ -267,22 +266,26 @@ module Buildr
       def add_web_facet(options = {})
         name = options[:name] || "Web"
         url_base = options[:url_base] || "/"
-        webroot = options[:webroot] || buildr_project._(:source, :main, :webapp)
-        web_xml = options[:web_xml] || "#{webroot}/WEB-INF/web.xml"
+        default_webroots = [buildr_project._(:source, :main, :webapp)]
+        webroots = options[:webroots] || default_webroots
+        web_xml = options[:web_xml] || "#{buildr_project._(:source, :main, :webapp)}/WEB-INF/web.xml"
         version = options[:version] || "3.0"
 
         add_facet(name, "web") do |f|
           f.configuration do |c|
             c.descriptors do |d|
-              d.deploymentDescriptor :name => 'web.xml', :url => file_path(web_xml), :optional => "true", :version => version
+              if File.exist?(web_xml) || default_web_xml != web_xml
+                d.deploymentDescriptor :name => 'web.xml', :url => file_path(web_xml), :optional => "true", :version => version
+              end
             end
             c.webroots do |w|
-              w.root :url => file_path(webroot), :relative => url_base
+              webroots.each do |webroot|
+                w.root :url => file_path(webroot), :relative => url_base
+              end
             end
           end
         end
       end
-
 
       def add_jruby_facet(options = {})
         name = options[:name] || "JRuby"
@@ -299,8 +302,10 @@ module Buildr
         factory_entry = options[:factory_entry] || buildr_project.name.to_s
         validation_enabled = options[:validation_enabled].nil? ? true : options[:validation_enabled]
         provider_enabled = options[:provider_enabled] || 'Hibernate'
-        persistence_xml = options[:persistence_xml] || buildr_project._(:source, :main, :resources, "META-INF/persistence.xml")
-        orm_xml = options[:orm_xml] || buildr_project._(:source, :main, :resources, "META-INF/orm.xml")
+        default_persistence_xml = buildr_project._(:source, :main, :resources, "META-INF/persistence.xml")
+        persistence_xml = options[:persistence_xml] || default_persistence_xml
+        default_orm_xml = buildr_project._(:source, :main, :resources, "META-INF/orm.xml")
+        orm_xml = options[:orm_xml] || default_orm_xml
         add_facet(name, "jpa") do |f|
           f.configuration do |c|
             c.setting :name => "validation-enabled", :value => validation_enabled
@@ -308,10 +313,10 @@ module Buildr
             c.tag!('datasource-mapping') do |ds|
               ds.tag!('factory-entry', :name => factory_entry)
             end
-            if File.exist?(persistence_xml)
+            if File.exist?(persistence_xml) || default_persistence_xml != persistence_xml
               c.deploymentDescriptor :name => 'persistence.xml', :url => file_path(persistence_xml)
             end
-            if File.exist?(orm_xml)
+            if File.exist?(orm_xml) || default_orm_xml != orm_xml
               c.deploymentDescriptor :name => 'orm.xml', :url => file_path(orm_xml)
             end
           end
@@ -320,14 +325,15 @@ module Buildr
 
       def add_ejb_facet(options = {})
         name = options[:name] || "EJB"
-        ejb_xml = options[:ejb_xml] || buildr_project._(:source, :main, :resources, "WEB-INF/ejb-jar.xml")
-        ejb_roots = options[:ejb_roots] || [buildr_project.packages, buildr_project.compile.target, buildr_project.resources.target].flatten
+        default_ejb_xml = buildr_project._(:source, :main, :resources, "WEB-INF/ejb-jar.xml")
+        ejb_xml = options[:ejb_xml] || default_ejb_xml
+        ejb_roots = options[:ejb_roots] || [buildr_project.compile.sources, buildr_project.resources.sources].flatten
 
         add_facet(name, "ejb") do |facet|
           facet.configuration do |c|
             c.descriptors do |d|
-              if File.exist?(ejb_xml)
-                d.deploymentDescriptor :name => 'ejb-jar.xml', :url => ejb_xml
+              if File.exist?(ejb_xml) || default_ejb_xml != ejb_xml
+                d.deploymentDescriptor :name => 'ejb-jar.xml', :url => file_path(ejb_xml)
               end
             end
             c.ejbRoots do |e|
@@ -571,6 +577,13 @@ module Buildr
                     xml.element :id => "jpa-descriptors", :facet => "#{module_name}/jpa/#{facet_name}"
                   end
                 end
+                if options[:enable_ejb]
+                  module_names = options[:ejb_module_names] || [project.iml.id]
+                  module_names.each do |module_name|
+                    facet_name = options[:ejb_facet_name] || "EJB"
+                    xml.element :id => "javaee-facet-resources", :facet => "#{module_name}/ejb/#{facet_name}"
+                  end
+                end
               end
               xml.element :id => "directory", :name => "lib" do
                 libraries.each(&:invoke).map(&:to_s).each do |dependency_path|
@@ -614,7 +627,6 @@ module Buildr
           xml.method()
         end
       end
-
 
       protected
 
