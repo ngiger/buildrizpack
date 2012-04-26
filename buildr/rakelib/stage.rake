@@ -13,15 +13,19 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-require 'rubyforge'
+
 require 'digest/md5'
 require 'digest/sha1'
+
+begin # Releases upload Gems to RubyForge.
+  require 'rubyforge'
+rescue LoadError
+  task(:setup) { install_gem 'rubyforge' }
+end
 
 gpg_cmd = 'gpg2'
 
 task :prepare do |task, args|
-  gpg_arg = args.gpg || ENV['gpg']
-  
   # Make sure we're doing a release from checked code.
   lambda do
     puts "Checking there are no local changes ... "
@@ -43,23 +47,23 @@ task :prepare do |task, args|
 
   # Need GPG to sign the packages.
   lambda do
-    gpg_arg or fail "Please run with gpg=<argument for gpg --local-user>"
-    gpg_ok = `gpg2 --list-keys #{gpg_arg}` rescue nil
+    args.gpg or fail "Please run with gpg=<argument for gpg --local-user>"
+    gpg_ok = `gpg2 --list-keys #{args.gpg}`
     if !$?.success?
-      gpg_ok = `gpg --list-keys #{gpg_arg}`
+      gpg_ok = `gpg --list-keys #{args.gpg}`
       gpg_cmd = 'gpg'
     end
-    fail "No GPG user #{gpg_arg}" if gpg_ok.empty?
+    fail "No GPG user #{args.gpg}" if gpg_ok.empty?
   end.call
 
   task(:license).invoke
+  task(:dependency).invoke
 
   # Need JRuby, Scala and Groovy installed to run all the specs.
   lambda do
     puts "Checking that we have JRuby, Scala and Groovy available ... "
     sh 'jruby --version'
-    `scala -version`
-    $?.exitstatus == 1 or fail "Scala is not installed"
+    sh 'scala -version'
     sh 'groovy -version'
     puts "[X] We have JRuby, Scala and Groovy"
   end.call
@@ -84,8 +88,7 @@ task :prepare do |task, args|
 end
 
 
-task :stage=>[:clobber, :prepare] do |task, args|
-  gpg_arg = args.gpg || ENV['gpg']
+task :stage=>['setup', 'doc:setup', :clobber, :prepare] do |task, args|
   mkpath '_staged'
 
   # Start by figuring out what has changed.
@@ -114,7 +117,7 @@ task :stage=>[:clobber, :prepare] do |task, args|
       bytes = File.open(pkg, 'rb') { |file| file.read }
       File.open(pkg + '.md5', 'w') { |file| file.write Digest::MD5.hexdigest(bytes) << ' ' << File.basename(pkg) }
       File.open(pkg + '.sha1', 'w') { |file| file.write Digest::SHA1.hexdigest(bytes) << ' ' << File.basename(pkg) }
-      sh gpg_cmd, '--local-user', gpg_arg, '--armor', '--output', pkg + '.asc', '--detach-sig', pkg, :verbose=>true
+      sh gpg_cmd, '--local-user', args.gpg, '--armor', '--output', pkg + '.asc', '--detach-sig', pkg, :verbose=>true
     end
     cp 'etc/KEYS', '_staged/dist'
     puts "[X] Created and signed release packages in _staged/dist"

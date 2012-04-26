@@ -13,6 +13,13 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+
+require 'buildr/core/project'
+require 'buildr/core/transports'
+require 'buildr/packaging/artifact_namespace'
+require 'fileutils'
+
+
 module Buildr
 
   desc 'Download all artifacts'
@@ -802,38 +809,28 @@ module Buildr
       when Struct
         set |= artifacts(spec.values)
       else
-        if spec.respond_to? :to_spec
-          set |= artifacts(spec.to_spec)
-        else
-          fail "Invalid artifact specification in #{specs.inspect}"
-        end
+        fail "Invalid artifact specification in #{specs.inspect}"
       end
     end
   end
 
-  def transitive(*args)
-    options = Hash === args.last ? args.pop : {}
-    dep_opts = {
-      :scopes   => options[:scopes] || [nil, "compile", "runtime", "provided"],
-      :optional => options[:optional]
-    }
-    specs = args.flatten
-    specs.inject([]) do |set, spec|
+  def transitive(*specs)
+    specs.flatten.inject([]) do |set, spec|
       case spec
       when /([^:]+:){2,4}/ # A spec as opposed to a file name.
         artifact = artifact(spec)
         set |= [artifact] unless artifact.type == :pom
-        set |= POM.load(artifact.pom).dependencies(dep_opts).map { |spec| artifact(spec) }
+        set |= POM.load(artifact.pom).dependencies.map { |spec| artifact(spec) }
       when Hash
-        set |= [transitive(spec, options)]
+        set |= [transitive(spec)]
       when String # Must always expand path.
-        set |= transitive(file(File.expand_path(spec)), options)
+        set |= transitive(file(File.expand_path(spec)))
       when Project
-        set |= transitive(spec.packages, options)
+        set |= transitive(spec.packages)
       when Rake::Task
-        set |= spec.respond_to?(:to_spec) ? transitive(spec.to_spec, options) : [spec]
+        set |= spec.respond_to?(:to_spec) ? transitive(spec.to_spec) : [spec]
       when Struct
-        set |= transitive(spec.values, options)
+        set |= transitive(spec.values)
       else
         fail "Invalid artifact specification in: #{specs.to_s}"
       end

@@ -16,7 +16,7 @@
 
 Gem::Specification.new do |spec|
   spec.name           = 'buildrizpack'
-  spec.version        = '0.1'
+  spec.version        = '0.2'
   spec.author         = 'Niklaus Giger'
   spec.email          = "niklaus.giger@member.fsf.org"
   spec.homepage       = "http://buildr.apache.org/"
@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.description    = <<-TEXT
 A buildr plugin contributing a new packaging method to package your project as a IzPack installer.
 TEXT
-  #spec.rubyforge_project  = 'buildrizpack'
+  spec.rubyforge_project  = 'buildrizpack'
   # Rakefile needs to create spec for both platforms (ruby and java), using the
   # $platform global variable.  In all other cases, we figure it out from RUBY_PLATFORM.
   spec.platform       = $platform || RUBY_PLATFORM[/java/] || 'ruby'
@@ -37,17 +37,18 @@ TEXT
                           '--webcvs', 'http://github.com/ngiger/buildrizpack'
   spec.post_install_message = "To get started run buildr --help"
   spec.add_dependency 'rake',                 '0.8.7'
-#  spec.add_dependency 'buildr',               '>=1.4.6'
+  spec.add_dependency 'buildr',               '1.4.6'
   spec.add_dependency 'builder',              '2.1.2'
   spec.add_dependency 'net-ssh',              '2.0.23'
   spec.add_dependency 'net-sftp',             '2.0.4'
   spec.add_dependency 'rubyzip',              '0.9.4'
-  spec.add_dependency 'highline',             '1.6.2'
+  spec.add_dependency 'highline',             '>=1.5.1'
   spec.add_dependency 'json_pure',            '1.4.3'
   spec.add_dependency 'rubyforge',            '2.0.3'
   spec.add_dependency 'hoe',                  '2.3.3'
-  spec.add_dependency 'rjb',                  '1.3.7' if spec.platform.to_s == 'x86-mswin32' || spec.platform.to_s == 'ruby'
-  spec.add_dependency 'atoulme-Antwrap',      '~> 0.7.2'
+  spec.add_dependency 'rjb',                  '1.3.3' if spec.platform.to_s == 'ruby'
+  spec.add_dependency 'rjb',                  '1.3.2' if spec.platform.to_s == 'x86-mswin32'
+  spec.add_dependency 'atoulme-Antwrap',      '0.7.1'
   spec.add_dependency 'diff-lcs',             '1.1.2'
   spec.add_dependency 'rspec-expectations',   '2.1.0'
   spec.add_dependency 'rspec-mocks',          '2.1.0'
@@ -59,15 +60,16 @@ TEXT
 
   # The documentation is currently not generated whe building via jruby
   unless spec.platform.to_s == 'java'
-    spec.add_development_dependency 'jekyll', '0.11.0'
+    spec.add_development_dependency 'jekyll', '~> 0.10.0'
     spec.add_development_dependency 'RedCloth', '4.2.9'
-    spec.add_development_dependency 'jekylltask', '1.1.0'
+    spec.add_development_dependency 'jekylltask', '>=1.0.2'
     spec.add_development_dependency 'rdoc', '3.8'
     spec.add_development_dependency 'rcov', '0.9.9'
   end
 
   spec.add_development_dependency 'ci_reporter', '1.6.3'
-  spec.add_development_dependency 'psych',        	      '>=1.3.0' if spec.platform.to_s != 'java' and !/1.8.\d/.match(RUBY_VERSION)
+  spec.add_development_dependency 'sdoc'
+#  spec.add_development_dependency 'psych',        	      '>=1.3.0' if spec.platform.to_s != 'java' and !/1.8.\d/.match(RUBY_VERSION)
 #  spec.add_development_dependency 'debugger'
   spec.add_development_dependency 'readline-ffi'
   spec.add_development_dependency 'pygmentize'
@@ -77,6 +79,6 @@ TEXT
   spec.add_development_dependency 'rubyforge'
 
   # signing key and certificate chain
-  spec.signing_key = '/media/Keys/gem-private_key.pem' if false
+  spec.signing_key = '/mnt/Keys/gem-private_key.pem' if false
   spec.cert_chain  = ['gem-public_cert.pem']
  end

@@ -13,6 +13,10 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+require 'buildr/run'
+require 'buildr/java/commands'
+require 'buildr/core/util'
+
 module Buildr
   module Run
 
@@ -23,7 +27,7 @@ module Buildr
 
       def run(task)
         fail "Missing :main option" unless task.options[:main]
-        cp = project.compile.dependencies + [project.path_to(:target, :classes), project.path_to(:target, :resources)] + task.classpath
+        cp = project.compile.dependencies + [project.path_to(:target, :classes)] + task.classpath
         Java::Commands.java(task.options[:main], {
           :properties => jrebel_props(project).merge(task.options[:properties] || {}),
           :classpath => cp,

@@ -13,6 +13,11 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+
+require 'buildr/shell'
+require 'buildr/java/commands'
+require 'buildr/core/util'
+
 module Buildr
 
   module Shell

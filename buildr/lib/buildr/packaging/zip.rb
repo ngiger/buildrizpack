@@ -13,6 +13,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+
 if RUBY_VERSION >= '1.9.0' # Required to properly load RubyZip under Ruby 1.9
   $LOADED_FEATURES.unshift 'ftools'
   require 'fileutils'

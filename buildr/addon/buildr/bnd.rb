@@ -46,9 +46,7 @@ module Buildr
 
       def classpath_element(dependencies)
         artifacts = Buildr.artifacts([dependencies])
-        artifacts.each do |artifact|
-          self.prerequisites << artifact
-        end
+        self.prerequisites << artifacts
         artifacts.each do |dependency|
           self.classpath << dependency.to_s
         end

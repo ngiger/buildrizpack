@@ -13,10 +13,14 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+
+require 'buildr/java'
+
+
 module Buildr
 
   # Provides the <code>cobertura:html</code>, <code>cobertura:xml</code> and <code>cobertura:check</code> tasks.
-  # Require explicitly using <code>require "buildr/java/cobertura"</code>.
+  # Require explicitly using <code>require "buildr/cobertura"</code>.
   #
   # You can generate cobertura reports for a single project
   # using the project name as prefix:
@@ -33,10 +37,6 @@ module Buildr
   #      cobertura.exclude 'some.foo.util.SimpleUtil'
   #      cobertura.exclude /*.Const(ants)?/i
   #   end
-  #
-  # You can also specify the top level directory to which the top level cobertura tasks
-  # will generate reports by setting the value of the <code>Buildr::Cobertura.report_dir</code>
-  # configuration parameter.
   #
   module Cobertura
 
@@ -65,18 +65,12 @@ module Buildr
         REQUIRES.artifacts
       end
 
-      attr_writer :report_dir
-
-      def report_dir
-        @report_dir || "reports/cobertura"
-      end
-
       def report_to(file = nil)
-        File.expand_path(File.join(*[report_dir, file.to_s].compact))
+        File.expand_path(File.join(*["reports/cobertura", file.to_s].compact))
       end
 
-      def data_file
-        File.expand_path("#{report_dir}.ser")
+      def data_file()
+        File.expand_path("reports/cobertura.ser")
       end
 
     end
@@ -272,9 +266,9 @@ module Buildr
       end
 
       [:xml, :html].each do |format|
-        desc "Run the test cases and produce code coverage reports"
+        report_target = report_to(format)
+        desc "Run the test cases and produce code coverage reports in #{report_target}"
         task format => ["instrument", "test"] do
-          report_target = report_to(format)
           if Buildr.projects.detect { |project| !project.compile.sources.empty? }
             info "Creating test coverage reports in #{report_target}"
             Buildr.ant "cobertura" do |ant|

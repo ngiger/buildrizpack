@@ -12,6 +12,8 @@ This plugin provides a one-stop solution for packaging, distributing and deployi
 
   gem install BuildrIzPack
 
+It has been tested using ruby-1.8.7-p352, jruby-1.6.5. Ruby 1.9 creates problem, which will probably be fixed once buildr 1.4.7 is out.
+
 == Useages
 
 There are the following different useages.
@@ -21,7 +23,7 @@ There are the following different useages.
 2. Specifiy a IzPack installer-XML via the the input methods
 3. Specify the XML-content of the various elements of the IzPack installation
 
-===  Example 1
+===  Example 1: Simple, defaults
 
 include one or more files and let the BuildrIzPack build a simple installer
 
@@ -33,7 +35,7 @@ include one or more files and let the BuildrIzPack build a simple installer
     package(:izpack).include(package(:jar))
   end
 
-=== Example 2
+=== Example 2: Using  a IzPack installer-XML
 
 Specifiy a IzPack installer-XML via the the input methods
 
@@ -45,7 +47,7 @@ Specifiy a IzPack installer-XML via the the input methods
     package(:izpack)
   end
 
-=== Example 3
+=== Example 3: Specify the XML-content
 
 Specify the XML-content
 
@@ -73,6 +75,7 @@ which changes might have broken your build.  To run all the test cases:
 
   rake spec
 
+(Works only with ruby-1.8.7 not with jruby or ruby 1.9)
 If you have any questions or suggestions for improvements you may reach me via E-Mail to mail:niklaus.giger@member.fsf.org
 
 

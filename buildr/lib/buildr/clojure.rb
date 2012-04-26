@@ -14,6 +14,8 @@
 # the License.
 
 
+require 'buildr/core/util'
+
 module Buildr::Clojure
 
   REQUIRES = ArtifactNamespace.for(self) do |ns|

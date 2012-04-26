@@ -13,6 +13,11 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+
+require 'rake'
+require 'buildr/core/util'
+
+
 module Buildr
 
   # :call-seq:

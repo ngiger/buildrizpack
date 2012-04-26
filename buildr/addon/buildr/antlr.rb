@@ -13,6 +13,10 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+
+require 'buildr/java'
+
+
 module Buildr
   # Provides ANTLR grammar generation tasks. Require explicitly using <code>require "buildr/antlr"</code>.
   module ANTLR

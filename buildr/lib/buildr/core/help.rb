@@ -13,6 +13,11 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+
+require 'buildr/core/common'
+require 'buildr/core/project'
+
+
 module Buildr
 
   module Help #:nodoc:
@@ -49,7 +54,7 @@ end
 
 
 task 'help' do
-  # Greeter
+  # Greeater.
   puts 'Usage:'
   puts '  buildr [-f rakefile] {options} targets...'
   puts

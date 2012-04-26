@@ -19,7 +19,7 @@ begin
 
   def default_spec_opts
     default = %w{--format documentation --out _reports/specs.txt --backtrace}
-    default << '--colour' if $stdout.isatty && !(Config::CONFIG['host_os'] =~ /mswin|win32|dos/i)
+    default << '--colour' if $stdout.isatty && !(RbConfig::CONFIG['host_os'] =~ /mswin|win32|dos/i)
     default
   end
 

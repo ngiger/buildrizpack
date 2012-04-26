@@ -13,8 +13,12 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-autoload :RubyForge, 'rubyforge'
+
+require 'buildr/packaging/package'
+require 'buildr/packaging/archive'
+gem 'rubyforge' ; autoload :RubyForge, 'rubyforge'
 Gem.autoload :Package, 'rubygems/package'
+
 
 module Buildr
 
@@ -33,6 +37,14 @@ module Buildr
     def spec
       yield @spec if block_given?
       @spec
+    end
+
+    def install
+      Util::Gems.command 'install', name
+    end
+
+    def uninstall
+      Util::Gems.command 'uninstall', spec.name, '-v', spec.version.to_s
     end
 
     def upload
