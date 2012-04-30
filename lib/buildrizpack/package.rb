@@ -125,7 +125,7 @@ module BuildrIzPack
       end
       Buildr.ant('izpack-ant') do |x|
 	izPackArtifact.invoke
-	msg = "Generating izpack aus #{File.expand_path(@input)} #{File.size(@input)}"
+	msg = "Generating izpack aus #{File.expand_path(@input)}"
 	trace msg
 	if properties
 	  properties.each{ |name, value|

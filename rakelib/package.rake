@@ -46,18 +46,3 @@ end
 @specs.values.each do |s|
   Gem::PackageTask.new(s) { |task| }
 end
-
-
-desc "Upload snapshot packages over to people.apache.org"
-task :snapshot=>[:package] do
-  rm_rf '_snapshot' # Always start with empty directory
-  puts "Copying existing gems from Apache"
-  sh 'rsync', '--progress', '--recursive', 'people.apache.org:public_html/buildr/snapshot/', '_snapshot/'
-  puts "Copying new gems over"
-  cp FileList['pkg/{*.gem,*.tgz,*.zip}'], '_snapshot/gems'
-  puts "Generating gem index ..."
-  sh 'gem', 'generate_index', '--directory', '_snapshot'
-  puts "Copying gem and index back to Apache"
-  sh 'rsync', '--progress', '--recursive', '_snapshot/', 'people.apache.org:public_html/buildr/snapshot/'
-end
-task(:clobber) { rm_rf '_snapshot' }

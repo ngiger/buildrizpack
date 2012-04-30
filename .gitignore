@@ -3,7 +3,6 @@ _reports
 buildr
 pkg
 rdoc
-Gemfile.lock
 rake
 *.log
 target

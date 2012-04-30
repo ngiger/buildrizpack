@@ -1,27 +1,62 @@
 require 'buildrizpack'
-Buildr::write "example_3/src/main/java/Hello.java", "public class Hello {}"
 define 'example_3', :version => '0.9.8' do
-  package(:jar)
-  package(:izpack).locales = ['eng', 'fra', 'deu']
-  Buildr.write(path_to(:target)+"/1_5.txt", "This is file 1_5.txt")
-  Buildr.write(path_to(:target)+"/3_7.txt", "This is file 3_7.txt")
-  pack = BuildrIzPack::Pack.new('myPackName', 'myPack description')
+  myJavaFile = "example_3/src/main/java/Hello.java"
+  myFirstTextFile = path_to(:target)+"/1_5.txt"
+  mySecondTxtFile = path_to(:target)+"/3_7.txt"
   myInstXml = path_to(:target, 'myInstaller.xml')
+  myInstaller = _('deploy/myInstaller.jar')
+  Buildr::write myJavaFile, "public class Hello {}" if !File.exists?(myJavaFile)
+  package(:jar)
+  
+  # :file attribute must appear on the first call to package(:izpack) or it will have no effet
+  package(:izpack, :file => myInstaller).locales = ['eng', 'fra', 'deu']
+
+  # we create file task for each file to be packed
+  file(myFirstTextFile) do Buildr.write(myFirstTextFile, "This is file 1_5.txt") end
+  file(mySecondTxtFile) do Buildr.write(mySecondTxtFile, "This is file 3_7.txt") end
+
+  # Use the BuildrIzPack::Pack to pack some files
+  pack = BuildrIzPack::Pack.new('myPackName', 'myPack description')
   pack.addFile(myInstXml)
-  pack.addFile(path_to(:target)+"/1_5.txt")
-  pack.addFile(path_to(:target)+"/3_7.txt", "$INSTALL_PATH/another_name")
-  xm = Builder::XmlMarkup.new(:target=>File.open(myInstXml, 'w+'), :indent => 2)
-  xm.instruct!
-  xm.installation('version'=>'1.0') {
-  xm.tag!('info') { xm.appversion(project.version); xm.appname(project.name) }
-  xm.guiprefs('width' => '400', 'height' => '400', 'resizable' => 'no')
-  xm.panels { |x| xm.panel('classname' => 'InstallPanel') }
-  xm.locale { |x| xm.langpack('iso3'=>'eng') }
-    xm.packs {
-      pack.emitIzPackXML(xm)
-	}
-  }
-  xm.target!().close
+  pack.addFile(package(:jar).to_s)
+  pack.addFile(myFirstTextFile)
+  pack.addFile(mySecondTxtFile, "$INSTALL_PATH/another_name")
+
+  # Create a custom installer.xml as there are just too many options to find a simple,
+  # less complex, easy to use abstraction. And XmlMarkup is easy to read & create!
+  file(myInstXml => [package(:jar).to_s, myFirstTextFile, mySecondTxtFile]) do
+    xm = Builder::XmlMarkup.new(:target=>File.open(myInstXml, 'w+'), :indent => 2)
+    xm.instruct!
+    xm.installation('version'=>'1.0') {
+    xm.tag!('info') { xm.appversion(project.version); xm.appname(project.name) }
+    xm.guiprefs('width' => '400', 'height' => '400', 'resizable' => 'no')
+    xm.panels { |x| xm.panel('classname' => 'InstallPanel') }
+    xm.locale { |x| xm.langpack('iso3'=>'eng') }
+      xm.packs {
+	pack.emitIzPackXML(xm)
+	  }
+    }
+    xm.target!().close
+  end
+
+  # Specify an explizit dependency to the installer.xml file
   package(:izpack).input = myInstXml
+  file(package(:izpack).to_s => myInstXml)
   package(:izpack)
+
+  # It is always a good idea to check whether your buildr project had the desired effect.
+  # Therefore I love to add some integration tests like
+  check package(:izpack), 'checks, whether IzPack installer works correctly' do
+    File.should exist(myJavaFile)
+    File.should exist(myInstXml)
+    File.should exist(myInstaller)
+    content = IO.readlines(myInstXml).join('')
+    content.should match(/installation/)
+    content.should match(/\$INSTALL_PATH\/another_name/)
+    content.should match(/pack name="myPackName"/)
+    content.should match(/<description>myPack description<\/description>/)
+    content.should match(/target="\$INSTALL_PATH\/plugins\/1_5.txt"/)
+    content.should match(/target="\$INSTALL_PATH\/another_name"/)
+  end
+
 end
