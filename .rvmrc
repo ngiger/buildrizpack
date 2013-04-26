@@ -9,7 +9,7 @@ cat <<EOF
 ********************************************************************
 EOF
 
-ruby_string="${BUILDR_RUBY_VERSION:-ruby-1.8.7-p352}" 
+ruby_string="${BUILDR_RUBY_VERSION:-ruby-1.9.3}" 
 bundler_gem_home="vendor/bundle" 
 
 if rvm list strings | grep -q "${ruby_string}" ; then 

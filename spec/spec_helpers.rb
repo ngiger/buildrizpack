@@ -26,6 +26,7 @@ unless defined?(SpecHelpers)
       require 'buildrizpack'
     end
   end
+  $: << File.join(File.dirname(__FILE__), "/../buildr/lib")
   require File.join(File.dirname(__FILE__), "/../buildr/spec/spec_helpers.rb")
 
 end

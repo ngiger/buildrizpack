@@ -1,0 +1,3 @@
+[submodule "buildr"]
+	path = buildr
+	url = git://git.apache.org/buildr.git

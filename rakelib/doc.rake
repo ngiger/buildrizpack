@@ -35,11 +35,6 @@ RDoc::Task.new :rdoc do |rdoc|
 end
 task :rdoc => ["rake/lib"]
 
-if `pygmentize -V`.empty?
-  puts "Buildr uses the Pygments python library. You can install it by running 'sudo easy_install Pygments'"
-end
-
-
 task :clobber do
   rm_rf 'rdoc'
 end
